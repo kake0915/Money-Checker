@@ -38,7 +38,7 @@ ret,binaryImage = cv2.threshold(grayImage, 0, 255, cv2.THRESH_BINARY | cv2.THRES
 #輪郭検出
 binaryImage, contours, hierarchy = cv2.findContours(binaryImage,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
-cv2.namedWindow("Target", cv2.WINDOW_NORMAL)
+#cv2.namedWindow("Target", cv2.WINDOW_NORMAL)
 
 #合計金額計算用変数
 prise = 0
@@ -60,7 +60,7 @@ for i,contour in enumerate(contours):
     target = img[y:y+h,x:x+w,:]
     #画像の高さ，幅を取得
     heightTarget,widthTarget,_= target.shape
-    cv2.imshow("Target", target)
+    #cv2.imshow("Target", target)
     #回転を意識しない外接矩形を描く
     #img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
     #最小外接円の計算
@@ -153,8 +153,8 @@ for i,contour in enumerate(contours):
                 temprate=cv2.imread(imagePath)
                 temprate = cv2.cvtColor(temprate, cv2.COLOR_BGR2GRAY)
                 #画像表示
-                cv2.namedWindow("temprate", cv2.WINDOW_NORMAL)
-                cv2.imshow("temprate", temprate)
+                #cv2.namedWindow("temprate", cv2.WINDOW_NORMAL)
+                #cv2.imshow("temprate", temprate)
                 #画像の高さ，幅を取得
                 heightTemprate,widthTemprate= temprate.shape
                 #テンプレートとターゲットの画像の大きさを揃える
@@ -175,9 +175,9 @@ for i,contour in enumerate(contours):
                 rotation_matrix = cv2.getRotationMatrix2D((widthTarget/2,heightTarget/2), beatAngle, 1.0)
                 # アフィン変換
                 targetRot = cv2.warpAffine(edgeTarget, rotation_matrix, (widthTarget,heightTarget), flags=cv2.INTER_CUBIC)
-                cv2.waitKey(0)
-                cv2.imshow("Target", temprate*targetRot)
-                cv2.waitKey(0)
+                #cv2.waitKey(0)
+                #cv2.imshow("Target", temprate*targetRot)
+                #cv2.waitKey(0)
                 if(maxMean<bestMean):
                     maxMean=bestMean
                     maxFileName = file
@@ -196,7 +196,7 @@ for i,contour in enumerate(contours):
                 prise +=500
                 cv2.putText(img,'500yen',top,font, fontSize,fontColor)
 
-    cv2.waitKey(0)
+    #cv2.waitKey(0)
 outPrise=str(prise)+'yen'
 print(outPrise)
 cv2.putText(img,outPrise,(100,300),font, fontSize+5,fontColor)
@@ -206,86 +206,3 @@ cv2.imshow("outputImage", img)
 cv2.imwrite('images/imageOut/'+framePath, img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
-'''
-#回転を考慮した外接矩形を描く
-#外接矩形の計算(戻り値：左上の点(x,y)，横と縦のサイズ(width, height)，回転角)
-rect = cv2.minAreaRect(cnt)
-rectから外接矩形の四隅の点を計算
-box = cv2.boxPoints(rect)
-box = np.int0(box)
-#外接矩形を描く
-img = cv2.drawContours(img,[box],0,(0,0,255),2)
-
-# 最初の（上位）10個の対応点を描画
-matches = sorted(matches, key = lambda x:x.distance)
-img3 = cv2.drawMatches(target,kp1,temprate,kp2,matches[:10, None,flags=2)
-cv2.namedWindow("outputImage2", cv2.WINDOW_NORMAL)
-cv2.imshow("outputImage2",img3 )
-
-#硬貨の特徴点比較
-minRet=1000
-for file in coinsFiles:
-    if file == '.DS_Store':
-        continue
-    #見本を読み込み
-    imagePath = coinsDir+file
-    temprate=cv2.imread(imagePath)
-    #見本のキーポイントと特徴記述子を求める
-    kp2, des2 = detector.detectAndCompute(temprate,None)
-    #二つの画像をマッチング
-    matches = bf.match(des1, des2)
-    dist = [m.distance for m in matches]
-    #類似度を計算する
-    ret = sum(dist)/len(dist)
-    #類似度が最小なら更新する
-    if(ret<minRet):
-        minRet=ret
-        minFileName=file
-
-
-# カーネルの定義
-kernel = np.ones((6, 6), np.uint8)
-# 膨張・収縮処理
-grayTarget = cv2.dilate(grayTarget, kernel)
-grayTarget = cv2.erode(grayTarget, kernel)
-#エッジ抽出
-edgeTarget = cv2.Canny(grayTarget,50,70)
-# 膨張・収縮処理
-#edgeTarget = cv2.dilate(edgeTarget, kernel)
-#edgeTarget = cv2.erode(edgeTarget, kernel)
-#大津の方法により2値化
-_,binaryTarget = cv2.threshold(grayTarget, 0, 1, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-edgeTarget*=binaryTarget
-#画面出力
-cv2.imshow("Target", edgeTarget)
-
-#ターゲットのキーポイントと特徴記述子を求める
-kp3, des3 = detector.detectAndCompute(target,None)
-#硬貨の特徴点比較
-minRet=1000
-for file in coinsFiles:
-    if file == '.DS_Store':
-        continue
-    #見本を読み込み
-    imagePath = coinsDir+file
-    temprate=cv2.imread(imagePath)
-    #見本のキーポイントと特徴記述子を求める
-    kp4, des4 = detector.detectAndCompute(temprate,None)
-    #二つの画像をマッチング
-    matches = bf.match(des3, des4)
-    dist = [m.distance for m in matches]
-    #類似度を計算する
-    ret = sum(dist)/len(dist)
-    #類似度が最小なら更新する
-    if(ret<minRet):
-        minRet=ret
-        minFileName=file
-
-    # 最初の（上位）10個の対応点を描画
-    matches = sorted(matches, key = lambda x:x.distance)
-    img3 = cv2.drawMatches(target,kp3,temprate,kp4,matches[:10], None,flags=2)
-    cv2.namedWindow("outputImage2", cv2.WINDOW_NORMAL)
-    cv2.imshow("outputImage2",img3 )
-    cv2.waitKey(0)
-'''
